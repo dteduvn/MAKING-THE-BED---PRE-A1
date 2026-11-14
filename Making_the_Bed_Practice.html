@@ -118,7 +118,7 @@ header .sub{color:var(--muted);font-size:15px}
 
 <div class="wrap">
   <header>
-    <img src="img/done.jpg" alt="">
+    <img src="done.jpg" alt="">
     <div><h1>Making the Bed</h1><div class="sub">Học và ôn từ vựng, câu · D&amp;T Academy</div></div>
     <div class="stars" id="stars">⭐ 0</div>
   </header>
@@ -160,7 +160,7 @@ function save(){ try{ localStorage.setItem("mtb_prac", JSON.stringify({L, stars,
 const $ = id => document.getElementById(id), app = $("app");
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const au = new Audio();
-function play(name){ au.pause(); au.ontimeupdate=null; if (typeof resetPlayers==='function' && active){ active=null; resetPlayers(); } au.src = "audio/" + name + ".mp3"; au.currentTime = 0; return au.play().catch(()=>{}); }
+function play(name){ au.pause(); au.ontimeupdate=null; if (typeof resetPlayers==='function' && active){ active=null; resetPlayers(); } au.src = "" + name + ".mp3"; au.currentTime = 0; return au.play().catch(()=>{}); }
 function playThen(name, fn){ play(name); au.onended = () => { au.onended = null; fn && fn(); }; }
 function star(){ stars++; $("stars").textContent = "⭐ " + stars; save(); }
 $("stars").textContent = "⭐ " + stars;
@@ -210,7 +210,7 @@ function gLearn(){
   const v = vocab(); let i = 0; const st = frame("learn");
   function draw(){
     const x = v[i];
-    st.innerHTML = `<div class="big"><img src="img/${x.i}.jpg" alt=""></div><div class="word">${x.w}</div>
+    st.innerHTML = `<div class="big"><img src="${x.i}.jpg" alt=""></div><div class="word">${x.w}</div>
       <div class="row"><button class="nav" id="pv" ${i===0?"disabled":""}>⬅</button><button class="hear" id="hr">🔊 Hear again</button><button class="nav" id="nx">${i===v.length-1?"✓":"➡"}</button></div><p class="note">${i+1} / ${v.length}</p>`;
     $("hr").onclick = () => play(x.c); $("pv").onclick = () => { i--; draw(); };
     $("nx").onclick = () => { if (i < v.length - 1) { i++; draw(); } else finish("learn"); };
@@ -224,7 +224,7 @@ function pickGame(id, byEar){
   function q(){
     dots(n); const t = qs[n], opts = shuffle([t, ...distract(pool, t, 3)]);
     st.innerHTML = (byEar ? `<button class="hear" id="hr">🔊 Hear again</button>` : `<div class="word">${t.w}</div><button class="nav" id="hr">🔊</button>`)
-      + `<div class="opts four">${opts.map((o,k)=>`<button class="opt" data-k="${k}"><img src="img/${o.i}.jpg" alt="Lựa chọn ${k+1}"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
+      + `<div class="opts four">${opts.map((o,k)=>`<button class="opt" data-k="${k}"><img src="${o.i}.jpg" alt="Lựa chọn ${k+1}"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
     $("hr").onclick = () => play(t.c); if (byEar) play(t.c);
     let locked = false;
     st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
@@ -243,7 +243,7 @@ function gMatch(){
   const uniq = shuffle(pool).filter((x,i,a)=>a.findIndex(y=>y.i===x.i)===i);
   function round(){
     dots(r); const set = uniq.slice(r*per, r*per+per); const left = shuffle(set), right = shuffle(set);
-    st.innerHTML = `<div class="pair"><div class="mcol">${left.map((x,k)=>`<button class="mi" data-k="${k}" data-s="p"><img src="img/${x.i}.jpg" alt="Tranh ${k+1}"></button>`).join("")}</div>
+    st.innerHTML = `<div class="pair"><div class="mcol">${left.map((x,k)=>`<button class="mi" data-k="${k}" data-s="p"><img src="${x.i}.jpg" alt="Tranh ${k+1}"></button>`).join("")}</div>
       <div class="mcol">${right.map((x,k)=>`<button class="mi" data-k="${k}" data-s="w">${x.w}</button>`).join("")}</div></div><div class="fb" id="fb"></div>`;
     let sel = null, got = 0;
     st.querySelectorAll(".mi").forEach(b => b.onclick = () => {
@@ -265,7 +265,7 @@ function gSpell(){
   function q(){
     dots(n); const t = qs[n], letters = t.w.split(""); const tiles = shuffle(letters.map((c,k)=>({c,k})));
     let pos = 0;
-    st.innerHTML = `<div class="big"><img src="img/${t.i}.jpg" alt="" style="height:170px"></div><button class="nav" id="hr">🔊 Hear again</button>
+    st.innerHTML = `<div class="big"><img src="${t.i}.jpg" alt="" style="height:170px"></div><button class="nav" id="hr">🔊 Hear again</button>
       <div class="slots">${letters.map((c,k)=>`<span class="slot" id="s${k}">${L===1&&k===0?`<span style="opacity:.35">${c}</span>`:""}</span>`).join("")}</div>
       <div class="tiles">${tiles.map((x,k)=>`<button class="tile" data-k="${k}">${x.c}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
     $("hr").onclick = () => play(t.c); play(t.c);
@@ -283,7 +283,7 @@ function gFill(){
   const qs = shuffle(FILL[L]), N = qs.length; let n = 0; const st = frame("fill", N);
   function q(){
     dots(n); const [img, s, a, o] = qs[n], opts = shuffle(o), full = s.replace("___", a), clip = sentClip(full);
-    st.innerHTML = `<div class="big"><img src="img/${img}.jpg" alt="" style="height:180px"></div><div class="sent">${s.replace("___",'<span class="gap" id="gp">&nbsp;</span>')}</div>
+    st.innerHTML = `<div class="big"><img src="${img}.jpg" alt="" style="height:180px"></div><div class="sent">${s.replace("___",'<span class="gap" id="gp">&nbsp;</span>')}</div>
       <div class="opts">${opts.map((w,k)=>`<button class="opt" data-k="${k}">${w}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
     let locked = false;
     st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
@@ -328,7 +328,7 @@ function gTalk(){
     async function step(){
       if (i >= all.length) { dots(N); return finish("talk"); }
       const x = all[i], prev = i > 0 ? all[i-1] : null;
-      st.innerHTML = `<div class="big"><img src="img/${x.img}_lg.jpg" alt="Tranh truyện" style="width:100%;height:auto;max-height:440px"></div>
+      st.innerHTML = `<div class="big"><img src="${x.img}_lg.jpg" alt="Tranh truyện" style="width:100%;height:auto;max-height:440px"></div>
         ${x.step ? `<div class="stepb2">Step ${x.step}</div>` : ""}
         ${prev && prev.scene === x.scene ? `<div class="say dim"><span class="who ${prev.who}">${WHO(prev.who)}</span>${prev.t}</div>` : ""}
         <div id="cur"></div><div class="fb" id="fb"></div>`;
@@ -361,7 +361,7 @@ function gWords(){
   const v = phrases(); let i = 0; const st = frame("words");
   function draw(){
     const x = v[i];
-    st.innerHTML = `<div class="big"><img src="img/${x.i}_lg.jpg" alt="" style="width:100%;height:auto;max-height:340px"></div><div class="word">${x.w}</div><div class="ins" style="font-size:20px">${x.vi}</div>
+    st.innerHTML = `<div class="big"><img src="${x.i}_lg.jpg" alt="" style="width:100%;height:auto;max-height:340px"></div><div class="word">${x.w}</div><div class="ins" style="font-size:20px">${x.vi}</div>
       <div class="row"><button class="nav" id="pv" ${i===0?"disabled":""}>⬅</button><button class="hear" id="hr">🔊 Hear again</button><button class="nav" id="nx">${i===v.length-1?"✓":"➡"}</button></div><p class="note">${i+1} / ${v.length}</p>`;
     $("hr").onclick = () => play(x.c); $("pv").onclick = () => { i--; draw(); };
     $("nx").onclick = () => { if (i < v.length - 1) { i++; draw(); } else { star(); finish("words"); } };
@@ -390,7 +390,7 @@ function gOrder(){
   const R = 2; let r = 0; const st = frame("order", R); const steps = stepClips();
   function round(){
     dots(r); const cards = shuffle([0,1,2,3]); let next = 0;
-    st.innerHTML = `<p class="ins">Chạm bước 1 trước, rồi đến bước 2, 3, 4.</p><div class="seqg">${cards.map(k=>`<button class="sq" data-k="${k}"><img src="img/step${k+1}.jpg" alt="Một bước dọn giường"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    st.innerHTML = `<p class="ins">Chạm bước 1 trước, rồi đến bước 2, 3, 4.</p><div class="seqg">${cards.map(k=>`<button class="sq" data-k="${k}"><img src="step${k+1}.jpg" alt="Một bước dọn giường"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
     st.querySelectorAll(".sq").forEach(b => b.onclick = () => {
       if (b.classList.contains("ok")) return; const k = +b.dataset.k;
       if (k === next) { b.classList.add("ok"); b.insertAdjacentHTML("beforeend", `<span class="n">${k+1}</span>`); star(); play(steps[k].c); $("fb").className="fb ok"; $("fb").textContent = steps[k].t; next++;
@@ -405,7 +405,7 @@ function gStep(){
   const steps = stepClips(), qs = shuffle([0,1,2,3,0,1,2,3]).slice(0,6), N = qs.length; let n = 0; const st = frame("listen", N);
   function q(){
     dots(n); const k = qs[n], opts = shuffle([0,1,2,3]);
-    st.innerHTML = `<button class="hear" id="hr">🔊 Hear again</button><div class="opts four">${opts.map(o=>`<button class="opt" data-k="${o}"><img src="img/step${o+1}.jpg" alt="Một bước dọn giường"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    st.innerHTML = `<button class="hear" id="hr">🔊 Hear again</button><div class="opts four">${opts.map(o=>`<button class="opt" data-k="${o}"><img src="step${o+1}.jpg" alt="Một bước dọn giường"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
     $("hr").onclick = () => play(steps[k].c); play(steps[k].c);
     let locked = false;
     st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
@@ -425,10 +425,10 @@ function player(file, title, sub){
   const w = document.createElement("div"); w.className = "player";
   w.innerHTML = `<button class="pp" aria-label="Phát">▶</button><div class="meta"><div class="t">${title}</div><div class="sub">${sub}</div><div class="prog"><i></i></div></div><div class="time">0:00</div>`;
   const pp = w.querySelector(".pp"), bar = w.querySelector(".prog"), fill = bar.querySelector("i"), tm = w.querySelector(".time");
-  const probe = new Audio("audio/" + file); probe.preload = "metadata"; probe.onloadedmetadata = () => { if (active !== w) tm.textContent = fmt(probe.duration); };
+  const probe = new Audio("" + file); probe.preload = "metadata"; probe.onloadedmetadata = () => { if (active !== w) tm.textContent = fmt(probe.duration); };
   pp.onclick = () => {
     if (active === w && !au.paused) { au.pause(); pp.textContent = "▶"; return; }
-    if (active !== w) { au.pause(); resetPlayers(); active = w; au.src = "audio/" + file; }
+    if (active !== w) { au.pause(); resetPlayers(); active = w; au.src = "" + file; }
     au.onended = () => { pp.textContent = "▶"; fill.style.width = "0"; if (file.includes("Home")) { done[L+"home"]=1; save(); } };
     au.ontimeupdate = () => { if (active === w) { fill.style.width = (au.currentTime/au.duration*100||0)+"%"; tm.textContent = fmt(au.currentTime)+" / "+fmt(au.duration); } };
     au.play().catch(()=>{}); pp.textContent = "❚❚";
@@ -442,7 +442,7 @@ function gDialogue(){
   const btns = [];
   storyScenes().forEach((sc, i) => {
     const card = document.createElement("div"); card.className = "scn";
-    card.innerHTML = `<span class="snum">${i+1}</span>${sc.step?`<span class="stepb">Step ${sc.step}</span>`:""}<img src="img/${sc.img}_lg.jpg" alt="Tranh ${i+1}">`;
+    card.innerHTML = `<span class="snum">${i+1}</span>${sc.step?`<span class="stepb">Step ${sc.step}</span>`:""}<img src="${sc.img}_lg.jpg" alt="Tranh ${i+1}">`;
     const ls = document.createElement("div"); ls.className = "lines";
     sc.lines.forEach(([tx, cl, who]) => { const b = document.createElement("button"); b.className = "ln"; b.dataset.c = cl;
       b.innerHTML = `<span class="ic" aria-hidden="true">🔊</span><span class="tx">${tx}</span><span class="wh ${who}">${WHO(who)}</span>`;
@@ -468,7 +468,7 @@ function gDialogue(){
 }
 function gHome(){
   active = null; const st = frame("home"), d = D[L]; st.style.textAlign = "left";
-  st.innerHTML = `<div class="steps4">${[1,2,3,4].map(i=>`<img src="img/step${i}.jpg" alt="Bước ${i}">`).join("")}</div>`;
+  st.innerHTML = `<div class="steps4">${[1,2,3,4].map(i=>`<img src="step${i}.jpg" alt="Bước ${i}">`).join("")}</div>`;
   st.appendChild(player(d.home.track, "Mỗi sáng dọn giường", "Chào buổi sáng → 4 bước → chant"));
   const tip = document.createElement("div"); tip.className = "tip";
   tip.innerHTML = L===1 ? "Trong clip gửi cô, con nói: <b>Good morning, Mummy!</b> và <b>I can make my bed!</b>" : "Trong clip gửi cô, con kể đủ 4 bước bằng <b>First, Then, Next, Finally</b>.";

@@ -73,7 +73,7 @@ section.act{margin-top:18px}
 
 <div class="wrap">
   <header class="top">
-    <img src="img/done.jpg" alt="Bé trai đứng cạnh chiếc giường đã dọn gọn">
+    <img src="done.jpg" alt="Bé trai đứng cạnh chiếc giường đã dọn gọn">
     <div><h1>Making the Bed</h1><p>Nghe, đọc và luyện nói · D&amp;T Academy</p></div>
   </header>
   <div class="bar">
@@ -103,17 +103,17 @@ const audio = new Audio(); let active = null;
 function fmt(s){ if(!isFinite(s)) return "0:00"; s=Math.round(s); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
 function stopAll(){ audio.pause(); document.querySelectorAll(".on").forEach(e=>e.classList.remove("on")); document.querySelectorAll(".pp").forEach(b=>{b.textContent="▶";b.setAttribute("aria-label","Phát")}); }
 function playClip(name, el){
-  stopAll(); active = null; audio.src = "audio/" + name + ".mp3"; audio.play().catch(()=>{}); if(el) el.classList.add("on");
+  stopAll(); active = null; audio.src = "" + name + ".mp3"; audio.play().catch(()=>{}); if(el) el.classList.add("on");
   audio.onended = () => el && el.classList.remove("on");
 }
 function player(file, title, sub){
   const w = document.createElement("div"); w.className = "player";
   w.innerHTML = `<button class="pp" aria-label="Phát">▶</button><div class="meta"><div class="t">${title}</div>${sub?`<div class="sub">${sub}</div>`:""}<div class="prog"><i></i></div></div><div class="time">0:00</div>`;
   const pp = w.querySelector(".pp"), bar = w.querySelector(".prog"), fill = bar.querySelector("i"), tm = w.querySelector(".time");
-  const probe = new Audio("audio/" + file); probe.preload = "metadata"; probe.onloadedmetadata = () => { if(active!==w) tm.textContent = fmt(probe.duration); };
+  const probe = new Audio("" + file); probe.preload = "metadata"; probe.onloadedmetadata = () => { if(active!==w) tm.textContent = fmt(probe.duration); };
   pp.onclick = () => {
     if (active === w && !audio.paused) { audio.pause(); pp.textContent = "▶"; return; }
-    if (active !== w) { stopAll(); active = w; audio.src = "audio/" + file; }
+    if (active !== w) { stopAll(); active = w; audio.src = "" + file; }
     audio.play().catch(()=>{}); pp.textContent = "❚❚"; pp.setAttribute("aria-label","Tạm dừng");
     audio.ontimeupdate = () => { if(active===w){ fill.style.width = (audio.currentTime/audio.duration*100||0)+"%"; tm.textContent = fmt(audio.currentTime)+" / "+fmt(audio.duration);} };
     audio.onended = () => { if(active===w){ pp.textContent="▶"; fill.style.width="0"; } };
@@ -134,7 +134,7 @@ function render(){
   if (cur === "vocab") {
     s.appendChild(player(d.vocab.track, "Listen and repeat", `${d.vocab.lines.length} từ`));
     const g = document.createElement("div"); g.className="grid";
-    d.vocab.lines.forEach(([t,c,img])=>{ const b=document.createElement("button"); b.className="vc"; b.innerHTML=`<img src="img/${img}.jpg" alt="${t}"><b>${t}</b>`; b.onclick=()=>playClip(c,b); g.appendChild(b); });
+    d.vocab.lines.forEach(([t,c,img])=>{ const b=document.createElement("button"); b.className="vc"; b.innerHTML=`<img src="${img}.jpg" alt="${t}"><b>${t}</b>`; b.onclick=()=>playClip(c,b); g.appendChild(b); });
     s.appendChild(g);
   }
   if (cur === "story") {
@@ -150,7 +150,7 @@ function render(){
     const btns = [];
     scenes.forEach((sc, i) => {
       const card = document.createElement("div"); card.className = "scene";
-      card.innerHTML = `<div class="snum">${i+1}</div><img src="img/${sc.img}_lg.jpg" alt="Tranh ${i+1}">${sc.step?`<div class="stepb">Step ${sc.step}</div>`:""}`;
+      card.innerHTML = `<div class="snum">${i+1}</div><img src="${sc.img}_lg.jpg" alt="Tranh ${i+1}">${sc.step?`<div class="stepb">Step ${sc.step}</div>`:""}`;
       const ls = document.createElement("div"); ls.className = "lines";
       sc.lines.forEach(([tx, cl, who]) => { const b = line(tx, cl, `<span class="who ${who}">${who==="M"?"Mummy":"Child"}</span>`); b.dataset.clip = cl; btns.push(b); ls.appendChild(b); });
       card.appendChild(ls); s.appendChild(card);
@@ -164,7 +164,7 @@ function render(){
         if (!playing) break;
         document.querySelectorAll(".ln.on").forEach(e=>e.classList.remove("on")); b.classList.add("on");
         b.scrollIntoView({behavior:"smooth", block:"center"});
-        await new Promise(res => { audio.src = "audio/" + b.dataset.clip + ".mp3"; audio.onended = () => setTimeout(res, 900); audio.onerror = res; audio.play().catch(res); });
+        await new Promise(res => { audio.src = "" + b.dataset.clip + ".mp3"; audio.onended = () => setTimeout(res, 900); audio.onerror = res; audio.play().catch(res); });
       }
       if (playing) { playing = false; allBtn.textContent = "▶"; document.querySelectorAll(".ln.on").forEach(e=>e.classList.remove("on")); }
     };
