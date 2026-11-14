@@ -1,0 +1,480 @@
+<title>Making the Bed Practice</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap">
+<style>
+/* Layout: home = picture-led game menu with star counts; each game = one focused card centred on screen, big tap targets for 5–10-year-olds */
+:root{
+  --bg:#FFF8E1; --card:#FFFFFF; --ink:#21302A; --muted:#5D6B62; --line:#FFD98A;
+  --green:#2E9D45; --green-soft:#D9F5DC; --berry:#E0336B; --sun:#FFD23F; --sunk:#5B4500;
+  --sky:#BDE4FF; --skyk:#0E4C80; --ok:#3F9A45; --no:#D2553F;
+  color-scheme:light;
+  --font:"Andika","Trebuchet MS",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg) linear-gradient(180deg,#FFF1B8 0,#FFF8E1 260px) no-repeat;color:var(--ink);font-family:var(--font);font-size:18px;line-height:1.4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:900px;margin:0 auto}
+button{font-family:var(--font);color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--berry);outline-offset:3px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:18px 8px}
+header img{width:70px;height:70px;border-radius:14px;object-fit:cover;border:3px solid var(--green);background:#fff}
+header h1{margin:0;font-size:clamp(24px,5vw,34px);color:var(--green);line-height:1.1}
+header .sub{color:var(--muted);font-size:15px}
+.stars{margin-left:auto;background:var(--card);border:2px solid var(--sun);border-radius:999px;padding:6px 14px;font-weight:700;white-space:nowrap}
+.lv{display:inline-flex;border:2px solid var(--green);border-radius:999px;overflow:hidden;margin:6px 0 14px}
+.lv button{border:0;background:transparent;font-weight:700;font-size:16px;padding:8px 16px}
+.lv button[aria-pressed="true"].b1{background:var(--sun);color:var(--sunk)}
+.lv button[aria-pressed="true"].b2{background:var(--sky);color:var(--skyk)}
+.group{margin:14px 0 6px;font-weight:700;color:var(--muted);font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.gm{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;display:flex;gap:12px;align-items:center;text-align:left;min-height:84px}
+.gm:hover{border-color:var(--green)}
+.gm .e{flex:none;width:52px;height:52px;border-radius:14px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-size:28px}
+.gm b{display:block;font-size:18px}
+.gm span{display:block;color:var(--muted);font-size:14px}
+.gm .done{color:var(--ok);font-weight:700}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 10px}
+.back{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:8px 14px;font-weight:700}
+.gtitle{font-size:22px;font-weight:700}
+.dots{display:flex;gap:5px;margin-left:auto}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dots i.f{background:var(--green)}
+.ins{margin:0 0 12px;color:var(--muted)}
+.stage{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px;text-align:center}
+.hear{border:0;background:var(--green);color:var(--bg);border-radius:14px;padding:12px 20px;font-size:18px;font-weight:700}
+.big img{width:min(100%,360px);height:240px;object-fit:contain;background:#fff;border-radius:16px}
+.word{font-size:clamp(34px,7vw,52px);font-weight:700;color:var(--berry);margin:8px 0}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.nav{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:10px 18px;font-size:18px;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+@media (min-width:640px){.opts.four{grid-template-columns:repeat(4,1fr)}}
+.opt{background:var(--card);border:3px solid var(--line);border-radius:16px;padding:8px;font-size:20px;font-weight:700;min-height:64px}
+.opt img{width:100%;height:120px;object-fit:contain;background:#fff;border-radius:10px;display:block}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--card))}
+.opt.no{border-color:var(--no);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.slots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:14px 0;min-height:58px}
+.slot{width:46px;height:56px;border-bottom:4px solid var(--ink);font-size:32px;font-weight:700;display:flex;align-items:flex-end;justify-content:center;color:var(--berry)}
+.tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tile{width:52px;height:56px;border-radius:12px;border:2px solid var(--green);background:var(--green-soft);font-size:28px;font-weight:700}
+.tile[disabled]{opacity:.25;cursor:default}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.chip{border:2px solid var(--green);background:var(--card);border-radius:12px;padding:10px 14px;font-size:20px;font-weight:700}
+.chip[disabled]{opacity:.25;cursor:default}
+.built{min-height:66px;border:2px dashed var(--line);border-radius:14px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;font-size:22px;font-weight:700;color:var(--berry)}
+.sent{font-size:clamp(24px,5vw,32px);font-weight:700;margin:10px 0}
+.gap{display:inline-block;min-width:110px;border-bottom:4px solid var(--ink);color:var(--ok)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mcol{display:flex;flex-direction:column;gap:10px}
+.mi{border:3px solid var(--line);background:var(--card);border-radius:14px;min-height:94px;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:6px}
+.mi img{height:84px;width:100%;object-fit:contain;background:#fff;border-radius:8px}
+.mi.sel{border-color:var(--skyk);background:var(--sky)}
+.mi.ok{border-color:var(--ok);opacity:.45}
+.seqg{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.sq{position:relative;border:3px solid var(--line);background:var(--card);border-radius:16px;padding:8px}
+.sq img{width:100%;height:150px;object-fit:contain;background:#fff;border-radius:10px;display:block}
+.sq .n{position:absolute;top:8px;left:8px;width:40px;height:40px;border-radius:50%;background:var(--green);color:var(--bg);font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center}
+.sq.ok{border-color:var(--ok)}
+.say{background:var(--green-soft);border-radius:16px;padding:12px 16px;display:inline-flex;gap:10px;align-items:center;font-size:22px;font-weight:700;margin:6px 0}
+.who{font-size:14px;border-radius:8px;padding:2px 8px;background:var(--card);color:var(--green)}
+.fb{min-height:30px;font-weight:700;margin-top:10px}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--no)}
+.win{padding:20px}
+.win .big{font-size:64px}
+.note{color:var(--muted);font-size:14px;margin-top:16px}
+.player{background:var(--card);border:2px solid var(--green);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:12px;text-align:left}
+.player .pp{flex:none;width:58px;height:58px;border-radius:50%;border:0;background:var(--green);color:var(--bg);font-size:24px;display:flex;align-items:center;justify-content:center}
+.player .meta{flex:1;min-width:0}.player .t{font-weight:700}.player .sub{color:var(--muted);font-size:14px}
+.prog{height:8px;background:var(--line);border-radius:4px;margin-top:8px;cursor:pointer;position:relative}.prog i{position:absolute;inset:0 auto 0 0;background:var(--green);border-radius:4px;width:0}
+.time{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.comic{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.comic img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%}
+.lines{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.ln{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 12px;font:inherit;color:inherit;text-align:left;width:100%}
+.ln .ic{flex:none;width:36px;height:36px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:15px}
+.ln .tx{flex:1;min-width:0;font-size:19px;font-weight:700;color:var(--berry)}
+.ln .wh{flex:none;font-size:13px;font-weight:700;border-radius:8px;padding:2px 8px;background:var(--green-soft);color:var(--green)}
+.ln .wh.B{background:var(--sky);color:var(--skyk)}
+.ln.on{border-color:var(--berry)}
+.tip{background:var(--green-soft);border-radius:14px;padding:12px 14px;margin-top:4px;text-align:left}
+.steps4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+.steps4 img{width:100%;height:90px;object-fit:contain;background:#fff;border-radius:10px;border:1px solid var(--line)}
+@media (max-width:520px){.steps4{grid-template-columns:repeat(2,1fr)}}
+.scn{position:relative;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:10px;margin-bottom:16px}
+.scn img{display:block;width:100%;height:auto;max-height:560px;object-fit:contain;background:#fff;border-radius:12px}
+.scn .lines{margin-top:10px}.scn .ln .tx{font-size:clamp(19px,3.4vw,26px)}
+.snum{position:absolute;top:18px;left:18px;width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;font-weight:700;font-size:19px;display:flex;align-items:center;justify-content:center;z-index:1}
+.stepb{position:absolute;top:18px;right:18px;background:var(--sun);color:var(--sunk);font-weight:700;border-radius:10px;padding:3px 12px;z-index:1}
+.stepb2{display:inline-block;background:var(--sun);color:var(--sunk);font-weight:700;border-radius:10px;padding:3px 12px;margin-top:8px}
+.say .who.M,.opt .who.M{background:var(--green-soft);color:var(--green)}
+.say .who.B,.opt .who.B{background:var(--sky);color:var(--skyk)}
+.opt .who{font-size:13px;border-radius:8px;padding:2px 8px;vertical-align:middle}
+.say.dim{opacity:.55;font-size:18px}
+.opt small{display:block;font-weight:400;color:var(--muted);font-size:14px;margin-top:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <img src="img/done.jpg" alt="">
+    <div><h1>Making the Bed</h1><div class="sub">Học và ôn từ vựng, câu · D&amp;T Academy</div></div>
+    <div class="stars" id="stars">⭐ 0</div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+const D = {"1": {"chant": {"lines": [["Pillows off, pull it tight,", "L1_chant_1"], ["Blanket on, nice and right!", "L1_chant_2"], ["Pillows back, teddy too,", "L1_chant_3"], ["A tidy bed, well done, you!", "L1_chant_4"]], "track": "L1_Chant.mp3", "dur": 34.944}, "vocab": {"lines": [["bed", "L1_vocab_1", "bed"], ["pillow", "L1_vocab_2", "pillow"], ["sheet", "L1_vocab_3", "sheet"], ["blanket", "L1_vocab_4", "blanket"], ["teddy", "L1_vocab_5", "teddy"], ["pyjamas", "L1_vocab_6", "pyjamas"], ["lamp", "L1_vocab_7", "lamp"], ["clock", "L1_vocab_8", "clock"], ["wardrobe", "L1_vocab_9", "wardrobe"]], "track": "L1_Act1_Vocabulary.mp3", "dur": 76.944}, "simon": {"lines": [["Simon says, take the pillow off!", "L1_simon_1", 1], ["Simon says, pull the sheet!", "L1_simon_2", 1], ["Put the blanket on!", "L1_simon_3", 0], ["Simon says, put the blanket on!", "L1_simon_4", 1], ["Pull!", "L1_simon_5", 0], ["Simon says, take the teddy off!", "L1_simon_6", 1], ["Simon says, put the pillow back!", "L1_simon_7", 1], ["Put the teddy back!", "L1_simon_8", 0], ["Simon says, put the teddy back!", "L1_simon_9", 1]], "track": "L1_Act2_Simon_says.mp3", "dur": 68.448}, "steps": {"lines": [["Take the pillows off.", "L1_step1_1", 1], ["Take the teddy off.", "L1_step1_2", 1], ["Put them down.", "L1_step1_3", 1], ["Pull the sheet.", "L1_step2_1", 2], ["Make it smooth.", "L1_step2_2", 2], ["Put the blanket on.", "L1_step3_1", 3], ["Pull, pull, pull!", "L1_step3_2", 3], ["Nice and tight!", "L1_step3_3", 3], ["Put the pillows back.", "L1_step4_1", 4], ["Put the teddy back.", "L1_step4_2", 4], ["All done!", "L1_step4_3", 4]], "track": "L1_Act3_Sentences.mp3", "dur": 77.136}, "dialogue": {"lines": [["Wake up! It's morning!", "L1_dlg_1", "M"], ["Good morning, Mummy!", "L1_dlg_2", "B"], ["Good morning, sleepyhead!", "L1_dlg_3", "M"], ["Get up, please. Let's make the bed!", "L1_dlg_4", "M"], ["OK, Mummy!", "L1_dlg_5", "B"], ["Well done! A tidy bed!", "L1_dlg_6", "M"], ["I can make my bed!", "L1_dlg_7", "B"]], "track": "L1_Act4_Dialogue_full.mp3", "track_m": "L1_Act4_You_are_the_child.mp3", "track_b": "L1_Act4_You_are_Mummy.mp3", "dur": 25.992}, "seq": {"lines": [["Take the pillows off.", "L1_seq_1"], ["Pull the sheet.", "L1_seq_2"], ["Put the blanket on.", "L1_seq_3"], ["Put the pillows back.", "L1_seq_4"]], "track": "L1_Act5_Order.mp3", "dur": 28.56, "track_game": "L1_Act5_Yes_or_No.mp3"}, "home": {"track": "L1_Act6_Home_practice.mp3", "dur": 63.24}, "phrases": [["wake up", "L1_ph_wake_up", "comic1", "thức dậy"], ["good morning", "L1_ph_good_morning", "comic2", "chào buổi sáng"], ["sleepyhead", "L1_ph_sleepyhead", "comic1", "đồ ngủ nướng"], ["get up", "L1_ph_get_up", "comic3", "ra khỏi giường"], ["make the bed", "L1_ph_make_the_bed", "step1", "dọn giường"], ["take off", "L1_ph_take_off", "step1", "bỏ ra, lấy ra"], ["pull", "L1_ph_pull", "step2", "kéo"], ["put on", "L1_ph_put_on", "step3", "đặt lên, trải lên"], ["put back", "L1_ph_put_back", "step4", "đặt lại"], ["tidy", "L1_ph_tidy", "done", "gọn gàng"], ["well done", "L1_ph_well_done", "done", "giỏi lắm"]]}, "2": {"chant": {"lines": [["Pillows off, pull it tight,", "L2_chant_1"], ["Blanket on, nice and right!", "L2_chant_2"], ["Pillows back, teddy too,", "L2_chant_3"], ["A tidy bed, well done, you!", "L2_chant_4"]], "track": "L2_Chant.mp3", "dur": 31.776}, "vocab": {"lines": [["bed", "L2_vocab_1", "bed"], ["pillow", "L2_vocab_2", "pillow"], ["sheet", "L2_vocab_3", "sheet"], ["blanket", "L2_vocab_4", "blanket"], ["teddy", "L2_vocab_5", "teddy"], ["pyjamas", "L2_vocab_6", "pyjamas"], ["lamp", "L2_vocab_7", "lamp"], ["clock", "L2_vocab_8", "clock"], ["wardrobe", "L2_vocab_9", "wardrobe"], ["mattress", "L2_vocab_10", "bed"], ["the head of the bed", "L2_vocab_11", "bed"], ["the foot of the bed", "L2_vocab_12", "bed"], ["duvet", "L2_vocab_13", "duvet"], ["duvet cover", "L2_vocab_14", "duvet_cover"], ["pillowcase", "L2_vocab_15", "pillowcase"], ["cushion", "L2_vocab_16", "cushion"], ["soft toy", "L2_vocab_17", "teddy"], ["nightdress", "L2_vocab_18", "nightdress"], ["bedside table", "L2_vocab_19", "bedside_table"], ["table lamp", "L2_vocab_20", "lamp"], ["alarm clock", "L2_vocab_21", "clock"], ["stool", "L2_vocab_22", "stool"], ["dressing table", "L2_vocab_23", "dressing_table"], ["mirror", "L2_vocab_24", "mirror"]], "track": "L2_Act1_Vocabulary.mp3", "dur": 204.528}, "simon": {"lines": [["Simon says, take the pillows off!", "L2_simon_1", 1], ["Simon says, tuck the sheet in!", "L2_simon_2", 1], ["Make it smooth!", "L2_simon_3", 0], ["Simon says, make it smooth!", "L2_simon_4", 1], ["Simon says, put the blanket on!", "L2_simon_5", 1], ["Pull it tight!", "L2_simon_6", 0], ["Simon says, pull it tight!", "L2_simon_7", 1], ["Simon says, tuck it in!", "L2_simon_8", 1], ["Put the pillows back!", "L2_simon_9", 0], ["Simon says, put your soft toys back!", "L2_simon_10", 1]], "track": "L2_Act2_Simon_says.mp3", "dur": 71.904}, "steps": {"lines": [["First, take the pillows off the bed.", "L2_step1_1", 1], ["Take your soft toys off, too.", "L2_step1_2", 1], ["Put them on the floor.", "L2_step1_3", 1], ["Then, tuck the sheet under the mattress.", "L2_step2_1", 2], ["Make it smooth and neat.", "L2_step2_2", 2], ["Next, put the blanket on.", "L2_step3_1", 3], ["Tuck it in the same way.", "L2_step3_2", 3], ["Pull it very tight.", "L2_step3_3", 3], ["Finally, put the pillows back.", "L2_step4_1", 4], ["Put your soft toys back, too.", "L2_step4_2", 4], ["Put them at the head of the bed.", "L2_step4_3", 4]], "track": "L2_Act3_Sentences.mp3", "dur": 82.344}, "dialogue": {"lines": [["Rise and shine! Wakey wakey! It's time to wake up!", "L2_dlg_1", "M"], ["Good morning, Mummy.", "L2_dlg_2", "B"], ["Good morning, sleepyhead. Now get up and help me make the bed.", "L2_dlg_3", "M"], ["OK, Mummy.", "L2_dlg_4", "B"], ["Come on. Let me show you how to make the bed.", "L2_dlg_5", "M"], ["There you have it! A well-made bed!", "L2_dlg_6", "M"], ["I can make my bed!", "L2_dlg_7", "B"]], "track": "L2_Act4_Dialogue_full.mp3", "track_m": "L2_Act4_You_are_the_child.mp3", "track_b": "L2_Act4_You_are_Mummy.mp3", "dur": 29.784}, "seq": {"lines": [["First, take the pillows and your soft toys off the bed.", "L2_seq_1"], ["Then, tuck the sheet under the mattress.", "L2_seq_2"], ["Next, put the blanket on and pull it tight.", "L2_seq_3"], ["Finally, put the pillows and soft toys back.", "L2_seq_4"]], "track": "L2_Act5_Order.mp3", "dur": 35.376, "track_game": "L2_Act5_Yes_or_No.mp3"}, "home": {"track": "L2_Act6_Home_practice.mp3", "dur": 68.904}, "phrases": [["rise and shine", "L2_ph_rise_and_shine", "comic1", "dậy thôi nào"], ["wake up", "L2_ph_wake_up", "comic1", "thức dậy"], ["good morning", "L2_ph_good_morning", "comic2", "chào buổi sáng"], ["sleepyhead", "L2_ph_sleepyhead", "comic1", "đồ ngủ nướng"], ["get up", "L2_ph_get_up", "comic3", "ra khỏi giường"], ["help", "L2_ph_help", "comic3", "giúp đỡ"], ["make the bed", "L2_ph_make_the_bed", "step1", "dọn giường"], ["take off", "L2_ph_take_off", "step1", "bỏ ra, lấy ra"], ["tuck in", "L2_ph_tuck_in", "step2", "nhét vào"], ["smooth", "L2_ph_smooth", "step2", "phẳng"], ["neat", "L2_ph_neat", "step2", "ngay ngắn"], ["put on", "L2_ph_put_on", "step3", "đặt lên, trải lên"], ["pull", "L2_ph_pull", "step3", "kéo"], ["tight", "L2_ph_tight", "step3", "căng"], ["put back", "L2_ph_put_back", "step4", "đặt lại"], ["first", "L2_ph_first", "step1", "đầu tiên"], ["then", "L2_ph_then", "step2", "sau đó"], ["next", "L2_ph_next", "step3", "tiếp theo"], ["finally", "L2_ph_finally", "step4", "cuối cùng"], ["tidy", "L2_ph_tidy", "done", "gọn gàng"], ["well-made", "L2_ph_well_made", "done", "được dọn gọn"]]}};
+const L2PIC = new Set(["duvet","duvet cover","pillowcase","cushion","soft toy","nightdress","bedside table","table lamp","alarm clock","stool","dressing table","mirror"]);
+const SEQ = {1:["Take the pillows off.","Pull the sheet.","Put the blanket on.","Put the pillows back."],
+             2:["First, take the pillows and your soft toys off the bed.","Then, tuck the sheet under the mattress.","Next, put the blanket on and pull it tight.","Finally, put the pillows and soft toys back."]};
+const FILL = {1:[["step1","Take the ___ off.","pillows",["pillows","blanket","sheet"]],["sheet","Pull the ___.","sheet",["sheet","pillows","bed"]],
+  ["step3","Put the ___ on.","blanket",["blanket","teddy","lamp"]],["step4","Put the pillows ___.","back",["back","off","on"]],["done","I can make my ___!","bed",["bed","clock","lamp"]]],
+  2:[["step1","First, take the pillows ___ the bed.","off",["off","on","back"]],["step2","Then, tuck the sheet under the ___.","mattress",["mattress","mirror","stool"]],
+  ["step3","Next, put the blanket on and pull it ___.","tight",["tight","smooth","tidy"]],["step4","Finally, put the pillows ___.","back",["back","off","under"]],
+  ["sheet","Make it smooth and ___.","neat",["neat","tight","off"]],["done","There you have it! A well-___ bed!","made",["made","make","tidy"]]]};
+const BUILD = {1:[["Take","the pillows","off."],["Pull","the sheet."],["Put","the blanket","on."],["Put","the pillows","back."],["I can","make","my bed!"]],
+  2:[["Then,","tuck","the sheet","under the mattress."],["Next,","put","the blanket","on."],["Pull","it","very tight."],["Finally,","put","the pillows","back."],["Let me","show you","how to make","the bed."]]};
+const GAMES = [
+  {id:"learn", g:"Từ vựng", e:"📖", n:"Learn the words", vi:"Xem tranh, nghe và đọc theo", run:gLearn},
+  {id:"tap", g:"Từ vựng", e:"👂", n:"Listen and tap", vi:"Nghe từ, chạm vào tranh đúng", run:gTap},
+  {id:"read", g:"Từ vựng", e:"🔤", n:"Read and choose", vi:"Đọc từ, chọn tranh đúng", run:gRead},
+  {id:"match", g:"Từ vựng", e:"🔗", n:"Match", vi:"Nối tranh với từ", run:gMatch},
+  {id:"spell", g:"Từ vựng", e:"✏️", n:"Spell it", vi:"Ghép chữ cái thành từ", run:gSpell},
+  {id:"words", g:"Từ khi nói với Mẹ", e:"👩", n:"Story words", vi:"Học các từ Mẹ và con dùng trong truyện", run:gWords},
+  {id:"wquiz", g:"Từ khi nói với Mẹ", e:"🎯", n:"Listen and choose", vi:"Nghe từ, chọn đúng từ đó", run:gWQuiz},
+  {id:"fill", g:"Câu", e:"🧩", n:"Fill the gap", vi:"Chọn từ còn thiếu trong câu", run:gFill},
+  {id:"build", g:"Câu", e:"🧱", n:"Build the sentence", vi:"Xếp từ thành câu", run:gBuild},
+
+  {id:"order", g:"Thứ tự", e:"🔢", n:"Make the bed", vi:"Chạm 4 bước theo thứ tự", run:gOrder},
+  {id:"listen", g:"Thứ tự", e:"🎧", n:"Which step?", vi:"Nghe câu, chọn tranh bước đúng", run:gStep},
+  {id:"dialogue", g:"Hội thoại với Mẹ", e:"📖", n:"Đọc cả truyện", vi:"Xem tranh, nghe và đọc đầy đủ hội thoại từ đầu đến cuối", run:gDialogue},
+  {id:"talk", g:"Hội thoại với Mẹ", e:"💬", n:"Talk to Mummy", vi:"Luyện cả đoạn hội thoại: chọn vai Con, vai Mẹ hoặc cả hai", run:gTalk},
+  {id:"home", g:"Hội thoại với Mẹ", e:"🏠", n:"Luyện ở nhà", vi:"Mở mỗi sáng khi con dọn giường", run:gHome}
+];
+let L = 1, stars = 0, done = {};
+try { const s = JSON.parse(localStorage.getItem("mtb_prac") || "{}"); if (s.L) L = s.L; stars = s.stars || 0; done = s.done || {}; } catch(e) {}
+function save(){ try{ localStorage.setItem("mtb_prac", JSON.stringify({L, stars, done})); }catch(e){} }
+const $ = id => document.getElementById(id), app = $("app");
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const au = new Audio();
+function play(name){ au.pause(); au.ontimeupdate=null; if (typeof resetPlayers==='function' && active){ active=null; resetPlayers(); } au.src = "audio/" + name + ".mp3"; au.currentTime = 0; return au.play().catch(()=>{}); }
+function playThen(name, fn){ play(name); au.onended = () => { au.onended = null; fn && fn(); }; }
+function star(){ stars++; $("stars").textContent = "⭐ " + stars; save(); }
+$("stars").textContent = "⭐ " + stars;
+
+function vocab(){ return D[L].vocab.lines.map(([w,c,i])=>({w,c,i})); }
+function picWords(){ const v = vocab(); return L===1 ? v : v.filter(x => L2PIC.has(x.w) || ["pillow","sheet","blanket","pyjamas","wardrobe"].includes(x.w)); }
+function distract(pool, t, n){ return shuffle(pool.filter(x => x.i !== t.i && x.w !== t.w)).filter((x,i,a)=>a.findIndex(y=>y.i===x.i)===i).slice(0,n); }
+function storyScenes(){
+  const dl = D[L].dialogue.lines, st = D[L].steps.lines;
+  return [{img:"comic1", lines:[dl[0]]}, {img:"comic2", lines:[dl[1], dl[2]]}, {img:"comic3", lines:[dl[3], dl[4]]},
+    ...[1,2,3,4].map(n => ({img:"step"+n, step:n, lines: st.filter(x=>x[2]===n).map(x=>[x[0], x[1], "M"])})), {img:"done", lines:[dl[5], dl[6]]}];
+}
+function storyLines(){ const out = []; storyScenes().forEach((sc,i) => sc.lines.forEach(([t,c,w]) => out.push({t, c, who:w, img:sc.img, scene:i, step:sc.step}))); return out; }
+const WHO = w => w === "M" ? "Mummy" : "Child";
+function stepClips(){ return D[L].seq.lines.map(([t,c])=>({t,c})); }
+function sentClip(text){ for (const k of ["steps","seq","dialogue"]) { const f = D[L][k].lines.find(x => x[0] === text); if (f) return f[1]; } return null; }
+
+function home(){
+  au.pause(); au.onended=null; au.ontimeupdate=null; active=null;
+  let h = `<div class="lv" role="group" aria-label="Trình độ"><button class="b1" id="l1" aria-pressed="${L===1}">Level 1 · Pre-A1</button><button class="b2" id="l2" aria-pressed="${L===2}">Level 2 · Movers</button></div>`;
+  let g = "";
+  GAMES.forEach(x => {
+    if (x.g !== g) { g = x.g; h += `${g!==GAMES[0].g?"</div>":""}<div class="group">${g}</div><div class="menu">`; }
+    const k = L + x.id;
+    h += `<button class="gm" data-id="${x.id}"><span class="e" aria-hidden="true">${x.e}</span><span><b>${x.n}</b><span>${x.vi}</span>${done[k]?`<span class="done">✓ Đã hoàn thành</span>`:""}</span></button>`;
+  });
+  h += `</div><p class="note">Bấm loa để nghe giọng Anh-Anh. Sai thì thử lại, đúng được ⭐.</p>`;
+  app.innerHTML = h;
+  $("l1").onclick = () => { L = 1; save(); home(); }; $("l2").onclick = () => { L = 2; save(); home(); };
+  app.querySelectorAll(".gm").forEach(b => b.onclick = () => GAMES.find(x => x.id === b.dataset.id).run());
+}
+function frame(id, total){
+  const x = GAMES.find(g => g.id === id);
+  app.innerHTML = `<div class="top"><button class="back" id="bk">⬅ Menu</button><span class="gtitle">${x.e} ${x.n}</span>${total?`<span class="dots" id="dots">${"<i></i>".repeat(total)}</span>`:""}</div><p class="ins">${x.vi}</p><div class="stage" id="st"></div>`;
+  $("bk").onclick = home; return $("st");
+}
+function dots(n){ const d = $("dots"); if (d) [...d.children].forEach((e,i)=>e.classList.toggle("f", i < n)); }
+function finish(id){
+  done[L + id] = 1; save(); playThen("fx_finish");
+  $("st").innerHTML = `<div class="win"><div class="big">🎉</div><div class="word">Great job!</div><p>Con đã hoàn thành trò chơi này.</p><div class="row"><button class="hear" id="again">Chơi lại</button><button class="nav" id="mn">Về menu</button></div></div>`;
+  $("again").onclick = () => GAMES.find(g => g.id === id).run(); $("mn").onclick = home;
+}
+function wrong(el, fb){ el.classList.remove("no"); void el.offsetWidth; el.classList.add("no"); play("fx_tryagain"); if (fb) { fb.className = "fb no"; fb.textContent = "Try again! · Thử lại nhé"; } }
+
+/* --- Learn --- */
+function gLearn(){
+  const v = vocab(); let i = 0; const st = frame("learn");
+  function draw(){
+    const x = v[i];
+    st.innerHTML = `<div class="big"><img src="img/${x.i}.jpg" alt=""></div><div class="word">${x.w}</div>
+      <div class="row"><button class="nav" id="pv" ${i===0?"disabled":""}>⬅</button><button class="hear" id="hr">🔊 Hear again</button><button class="nav" id="nx">${i===v.length-1?"✓":"➡"}</button></div><p class="note">${i+1} / ${v.length}</p>`;
+    $("hr").onclick = () => play(x.c); $("pv").onclick = () => { i--; draw(); };
+    $("nx").onclick = () => { if (i < v.length - 1) { i++; draw(); } else finish("learn"); };
+    play(x.c);
+  }
+  draw();
+}
+/* --- Listen and tap / Read and choose --- */
+function pickGame(id, byEar){
+  const pool = picWords(), N = 8, qs = shuffle(pool).slice(0, N); let n = 0; const st = frame(id, N);
+  function q(){
+    dots(n); const t = qs[n], opts = shuffle([t, ...distract(pool, t, 3)]);
+    st.innerHTML = (byEar ? `<button class="hear" id="hr">🔊 Hear again</button>` : `<div class="word">${t.w}</div><button class="nav" id="hr">🔊</button>`)
+      + `<div class="opts four">${opts.map((o,k)=>`<button class="opt" data-k="${k}"><img src="img/${o.i}.jpg" alt="Lựa chọn ${k+1}"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    $("hr").onclick = () => play(t.c); if (byEar) play(t.c);
+    let locked = false;
+    st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+      if (locked) return; const o = opts[+b.dataset.k];
+      if (o === t) { locked = true; b.classList.add("ok"); star(); $("fb").className = "fb ok"; $("fb").textContent = "Well done! · " + t.w; playThen(t.c, () => { n++; n < N ? q() : (dots(N), finish(id)); }); }
+      else wrong(b, $("fb"));
+    });
+  }
+  q();
+}
+function gTap(){ pickGame("tap", true); }
+function gRead(){ pickGame("read", false); }
+/* --- Match --- */
+function gMatch(){
+  const pool = picWords(), R = 2, per = L===1 ? 4 : 5; let r = 0; const st = frame("match", R);
+  const uniq = shuffle(pool).filter((x,i,a)=>a.findIndex(y=>y.i===x.i)===i);
+  function round(){
+    dots(r); const set = uniq.slice(r*per, r*per+per); const left = shuffle(set), right = shuffle(set);
+    st.innerHTML = `<div class="pair"><div class="mcol">${left.map((x,k)=>`<button class="mi" data-k="${k}" data-s="p"><img src="img/${x.i}.jpg" alt="Tranh ${k+1}"></button>`).join("")}</div>
+      <div class="mcol">${right.map((x,k)=>`<button class="mi" data-k="${k}" data-s="w">${x.w}</button>`).join("")}</div></div><div class="fb" id="fb"></div>`;
+    let sel = null, got = 0;
+    st.querySelectorAll(".mi").forEach(b => b.onclick = () => {
+      if (b.classList.contains("ok")) return;
+      const item = (b.dataset.s === "p" ? left : right)[+b.dataset.k];
+      if (!sel || sel.dataset.s === b.dataset.s) { st.querySelectorAll(".mi.sel").forEach(x=>x.classList.remove("sel")); sel = b; b.classList.add("sel"); if (b.dataset.s==="w") play(item.c); return; }
+      const other = (sel.dataset.s === "p" ? left : right)[+sel.dataset.k];
+      if (other === item) { sel.classList.remove("sel"); sel.classList.add("ok"); b.classList.add("ok"); star(); play(item.c); sel = null; got++;
+        if (got === set.length) { r++; setTimeout(() => r < R ? round() : (dots(R), finish("match")), 900); } }
+      else { wrong(b, $("fb")); sel.classList.remove("sel"); sel = null; }
+    });
+  }
+  round();
+}
+/* --- Spell --- */
+function gSpell(){
+  const pool = vocab().filter(x => !x.w.includes(" ") && (L===1 ? x.w.length <= 7 : true));
+  const N = L===1 ? 6 : 8, qs = shuffle(pool).slice(0, N); let n = 0; const st = frame("spell", N);
+  function q(){
+    dots(n); const t = qs[n], letters = t.w.split(""); const tiles = shuffle(letters.map((c,k)=>({c,k})));
+    let pos = 0;
+    st.innerHTML = `<div class="big"><img src="img/${t.i}.jpg" alt="" style="height:170px"></div><button class="nav" id="hr">🔊 Hear again</button>
+      <div class="slots">${letters.map((c,k)=>`<span class="slot" id="s${k}">${L===1&&k===0?`<span style="opacity:.35">${c}</span>`:""}</span>`).join("")}</div>
+      <div class="tiles">${tiles.map((x,k)=>`<button class="tile" data-k="${k}">${x.c}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    $("hr").onclick = () => play(t.c); play(t.c);
+    st.querySelectorAll(".tile").forEach(b => b.onclick = () => {
+      const x = tiles[+b.dataset.k];
+      if (x.c === letters[pos]) { $("s"+pos).textContent = x.c; b.disabled = true; pos++;
+        if (pos === letters.length) { star(); $("fb").className="fb ok"; $("fb").textContent="Well done!"; playThen(t.c, () => { n++; n < N ? q() : (dots(N), finish("spell")); }); } }
+      else wrong(b, $("fb"));
+    });
+  }
+  q();
+}
+/* --- Fill the gap --- */
+function gFill(){
+  const qs = shuffle(FILL[L]), N = qs.length; let n = 0; const st = frame("fill", N);
+  function q(){
+    dots(n); const [img, s, a, o] = qs[n], opts = shuffle(o), full = s.replace("___", a), clip = sentClip(full);
+    st.innerHTML = `<div class="big"><img src="img/${img}.jpg" alt="" style="height:180px"></div><div class="sent">${s.replace("___",'<span class="gap" id="gp">&nbsp;</span>')}</div>
+      <div class="opts">${opts.map((w,k)=>`<button class="opt" data-k="${k}">${w}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    let locked = false;
+    st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+      if (locked) return; const w = opts[+b.dataset.k];
+      if (w === a) { locked = true; b.classList.add("ok"); $("gp").textContent = a; star(); $("fb").className="fb ok"; $("fb").textContent="Well done!";
+        const next = () => { n++; n < N ? q() : (dots(N), finish("fill")); };
+        clip ? playThen(clip, () => setTimeout(next, 400)) : playThen("fx_welldone", next); }
+      else wrong(b, $("fb"));
+    });
+  }
+  q();
+}
+/* --- Build the sentence --- */
+function gBuild(){
+  const qs = shuffle(BUILD[L]), N = qs.length; let n = 0; const st = frame("build", N);
+  function q(){
+    dots(n); const parts = qs[n], chips = shuffle(parts.map((p,k)=>({p,k}))); let pos = 0; const full = parts.join(" "), clip = sentClip(full);
+    st.innerHTML = `<div class="built" id="bt"></div><div class="chips">${chips.map((x,k)=>`<button class="chip" data-k="${k}">${x.p}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    st.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+      const x = chips[+b.dataset.k];
+      if (x.k === pos) { b.disabled = true; $("bt").insertAdjacentHTML("beforeend", `<span>${x.p}</span>`); pos++;
+        if (pos === parts.length) { star(); $("fb").className="fb ok"; $("fb").textContent="Well done!";
+          const next = () => { n++; n < N ? q() : (dots(N), finish("build")); };
+          clip ? playThen(clip, () => setTimeout(next, 500)) : playThen("fx_welldone", () => setTimeout(next, 300)); } }
+      else wrong(b, $("fb"));
+    });
+  }
+  q();
+}
+/* --- Talk to Mummy --- */
+function gTalk(){
+  const st = frame("talk");
+  st.innerHTML = `<p class="ins">Con muốn luyện vai nào? · Which part?</p>
+    <div class="opts" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+      <button class="opt" data-r="B">🧒 Con là Child<br><small>Mẹ nói, con chọn lời của Con</small></button>
+      <button class="opt" data-r="M">👩 Con là Mummy<br><small>Con chọn lời của Mẹ</small></button>
+      <button class="opt" data-r="A">⭐ Cả hai vai<br><small>Chọn đúng mọi câu trong truyện</small></button></div>`;
+  st.querySelectorAll("[data-r]").forEach(b => b.onclick = () => run(b.dataset.r));
+  function run(role){
+    const all = storyLines(), mine = x => role === "A" || x.who === role, N = all.filter(mine).length; let i = 0, done = 0;
+    app.querySelector(".top").insertAdjacentHTML("beforeend", `<span class="dots" id="dots">${"<i></i>".repeat(N)}</span>`);
+    async function step(){
+      if (i >= all.length) { dots(N); return finish("talk"); }
+      const x = all[i], prev = i > 0 ? all[i-1] : null;
+      st.innerHTML = `<div class="big"><img src="img/${x.img}_lg.jpg" alt="Tranh truyện" style="width:100%;height:auto;max-height:440px"></div>
+        ${x.step ? `<div class="stepb2">Step ${x.step}</div>` : ""}
+        ${prev && prev.scene === x.scene ? `<div class="say dim"><span class="who ${prev.who}">${WHO(prev.who)}</span>${prev.t}</div>` : ""}
+        <div id="cur"></div><div class="fb" id="fb"></div>`;
+      const cur = $("cur");
+      if (!mine(x)) {
+        cur.innerHTML = `<div class="say"><span class="who ${x.who}">${WHO(x.who)}</span>${x.t}</div><div class="row"><button class="nav" id="hr">🔊 Nghe lại</button><button class="nav" id="nx">Tiếp ➡</button></div>`;
+        let moved = false; const go = () => { if (moved) return; moved = true; i++; step(); };
+        $("hr").onclick = () => play(x.c); $("nx").onclick = go;
+        playThen(x.c, () => setTimeout(go, 700));
+        return;
+      }
+      const pool = all.filter(y => y.who === x.who && y.t !== x.t).map(y => y.t);
+      const opts = shuffle([x.t, ...shuffle([...new Set(pool)]).slice(0, 2)]);
+      cur.innerHTML = `<p class="ins" style="margin:8px 0 4px">${x.who === "M" ? "Mummy nói gì? · What does Mummy say?" : "Con nói gì? · What do you say?"}</p>
+        <div class="opts" style="grid-template-columns:1fr">${opts.map((w,k)=>`<button class="opt" data-k="${k}"><span class="who ${x.who}">${WHO(x.who)}</span> ${w}</button>`).join("")}</div>`;
+      let locked = false;
+      cur.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+        if (locked) return;
+        if (opts[+b.dataset.k] === x.t) { locked = true; b.classList.add("ok"); star(); done++; dots(done); $("fb").className = "fb ok"; $("fb").textContent = "Well done! Đọc to câu này nhé!";
+          playThen(x.c, () => setTimeout(() => { i++; step(); }, 900)); }
+        else wrong(b, $("fb"));
+      });
+    }
+    step();
+  }
+}
+/* --- Story words (phrases used with Mummy) --- */
+function phrases(){ return (D[L].phrases || []).map(([w,c,i,vi]) => ({w,c,i,vi})); }
+function gWords(){
+  const v = phrases(); let i = 0; const st = frame("words");
+  function draw(){
+    const x = v[i];
+    st.innerHTML = `<div class="big"><img src="img/${x.i}_lg.jpg" alt="" style="width:100%;height:auto;max-height:340px"></div><div class="word">${x.w}</div><div class="ins" style="font-size:20px">${x.vi}</div>
+      <div class="row"><button class="nav" id="pv" ${i===0?"disabled":""}>⬅</button><button class="hear" id="hr">🔊 Hear again</button><button class="nav" id="nx">${i===v.length-1?"✓":"➡"}</button></div><p class="note">${i+1} / ${v.length}</p>`;
+    $("hr").onclick = () => play(x.c); $("pv").onclick = () => { i--; draw(); };
+    $("nx").onclick = () => { if (i < v.length - 1) { i++; draw(); } else { star(); finish("words"); } };
+    play(x.c);
+  }
+  draw();
+}
+function gWQuiz(){
+  const v = phrases(), N = Math.min(8, v.length), qs = shuffle(v).slice(0, N); let n = 0; const st = frame("wquiz", N);
+  function q(){
+    dots(n); const t = qs[n], opts = shuffle([t, ...shuffle(v.filter(x => x.w !== t.w)).slice(0, 2)]);
+    st.innerHTML = `<button class="hear" id="hr">🔊 Hear again</button><div class="opts" style="grid-template-columns:1fr">${opts.map((o,k)=>`<button class="opt" data-k="${k}" style="font-size:24px">${o.w}</button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    $("hr").onclick = () => play(t.c); play(t.c);
+    let locked = false;
+    st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+      if (locked) return;
+      if (opts[+b.dataset.k] === t) { locked = true; b.classList.add("ok"); star(); $("fb").className = "fb ok"; $("fb").textContent = t.w + " · " + t.vi;
+        playThen("fx_welldone", () => setTimeout(() => { n++; n < N ? q() : (dots(N), finish("wquiz")); }, 500)); }
+      else wrong(b, $("fb"));
+    });
+  }
+  q();
+}
+/* --- Make the bed (order) --- */
+function gOrder(){
+  const R = 2; let r = 0; const st = frame("order", R); const steps = stepClips();
+  function round(){
+    dots(r); const cards = shuffle([0,1,2,3]); let next = 0;
+    st.innerHTML = `<p class="ins">Chạm bước 1 trước, rồi đến bước 2, 3, 4.</p><div class="seqg">${cards.map(k=>`<button class="sq" data-k="${k}"><img src="img/step${k+1}.jpg" alt="Một bước dọn giường"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    st.querySelectorAll(".sq").forEach(b => b.onclick = () => {
+      if (b.classList.contains("ok")) return; const k = +b.dataset.k;
+      if (k === next) { b.classList.add("ok"); b.insertAdjacentHTML("beforeend", `<span class="n">${k+1}</span>`); star(); play(steps[k].c); $("fb").className="fb ok"; $("fb").textContent = steps[k].t; next++;
+        if (next === 4) { r++; setTimeout(() => r < R ? round() : (dots(R), finish("order")), 3200); } }
+      else wrong(b, $("fb"));
+    });
+  }
+  round();
+}
+/* --- Which step? --- */
+function gStep(){
+  const steps = stepClips(), qs = shuffle([0,1,2,3,0,1,2,3]).slice(0,6), N = qs.length; let n = 0; const st = frame("listen", N);
+  function q(){
+    dots(n); const k = qs[n], opts = shuffle([0,1,2,3]);
+    st.innerHTML = `<button class="hear" id="hr">🔊 Hear again</button><div class="opts four">${opts.map(o=>`<button class="opt" data-k="${o}"><img src="img/step${o+1}.jpg" alt="Một bước dọn giường"></button>`).join("")}</div><div class="fb" id="fb"></div>`;
+    $("hr").onclick = () => play(steps[k].c); play(steps[k].c);
+    let locked = false;
+    st.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+      if (locked) return;
+      if (+b.dataset.k === k) { locked = true; b.classList.add("ok"); star(); $("fb").className="fb ok"; $("fb").textContent = steps[k].t;
+        playThen("fx_welldone", () => { n++; n < N ? q() : (dots(N), finish("listen")); }); }
+      else wrong(b, $("fb"));
+    });
+  }
+  q();
+}
+
+let active = null;
+function fmt(x){ if(!isFinite(x)) return "0:00"; x=Math.round(x); return Math.floor(x/60)+":"+String(x%60).padStart(2,"0"); }
+function resetPlayers(){ document.querySelectorAll(".pp").forEach(b=>b.textContent="▶"); document.querySelectorAll(".ln.on").forEach(e=>e.classList.remove("on")); }
+function player(file, title, sub){
+  const w = document.createElement("div"); w.className = "player";
+  w.innerHTML = `<button class="pp" aria-label="Phát">▶</button><div class="meta"><div class="t">${title}</div><div class="sub">${sub}</div><div class="prog"><i></i></div></div><div class="time">0:00</div>`;
+  const pp = w.querySelector(".pp"), bar = w.querySelector(".prog"), fill = bar.querySelector("i"), tm = w.querySelector(".time");
+  const probe = new Audio("audio/" + file); probe.preload = "metadata"; probe.onloadedmetadata = () => { if (active !== w) tm.textContent = fmt(probe.duration); };
+  pp.onclick = () => {
+    if (active === w && !au.paused) { au.pause(); pp.textContent = "▶"; return; }
+    if (active !== w) { au.pause(); resetPlayers(); active = w; au.src = "audio/" + file; }
+    au.onended = () => { pp.textContent = "▶"; fill.style.width = "0"; if (file.includes("Home")) { done[L+"home"]=1; save(); } };
+    au.ontimeupdate = () => { if (active === w) { fill.style.width = (au.currentTime/au.duration*100||0)+"%"; tm.textContent = fmt(au.currentTime)+" / "+fmt(au.duration); } };
+    au.play().catch(()=>{}); pp.textContent = "❚❚";
+  };
+  bar.onclick = e => { if (active === w && au.duration) { const r = bar.getBoundingClientRect(); au.currentTime = (e.clientX - r.left) / r.width * au.duration; } };
+  return w;
+}
+function gDialogue(){
+  active = null; const st = frame("dialogue"), d = D[L].dialogue; st.style.textAlign = "left";
+  st.innerHTML = `<div class="row" style="justify-content:flex-start;margin:0 0 14px"><button class="hear" id="all">▶ Đọc cả truyện</button></div>`;
+  const btns = [];
+  storyScenes().forEach((sc, i) => {
+    const card = document.createElement("div"); card.className = "scn";
+    card.innerHTML = `<span class="snum">${i+1}</span>${sc.step?`<span class="stepb">Step ${sc.step}</span>`:""}<img src="img/${sc.img}_lg.jpg" alt="Tranh ${i+1}">`;
+    const ls = document.createElement("div"); ls.className = "lines";
+    sc.lines.forEach(([tx, cl, who]) => { const b = document.createElement("button"); b.className = "ln"; b.dataset.c = cl;
+      b.innerHTML = `<span class="ic" aria-hidden="true">🔊</span><span class="tx">${tx}</span><span class="wh ${who}">${WHO(who)}</span>`;
+      b.onclick = () => { reading = false; active = null; resetPlayers(); b.classList.add("on"); playThen(cl, () => b.classList.remove("on")); }; btns.push(b); ls.appendChild(b); });
+    card.appendChild(ls); st.appendChild(card);
+  });
+  let reading = false;
+  $("all").onclick = async () => {
+    if (reading) { reading = false; au.pause(); $("all").textContent = "▶ Đọc cả truyện"; return; }
+    reading = true; $("all").textContent = "❚❚ Dừng";
+    for (const b of btns) { if (!reading) break; resetPlayers(); b.classList.add("on"); b.scrollIntoView({behavior:"smooth", block:"center"});
+      await new Promise(r => playThen(b.dataset.c, () => setTimeout(r, 800))); }
+    reading = false; resetPlayers(); if ($("all")) $("all").textContent = "▶ Đọc cả truyện";
+  };
+  const h = document.createElement("p"); h.className = "ins"; h.style.marginTop = "18px"; h.innerHTML = "<b>Phân vai</b> · Đọc xong truyện rồi luyện nói vai còn lại vào khoảng trống."; st.appendChild(h);
+  st.appendChild(player(d.track, "Cả đoạn hội thoại", "Giọng Mẹ và giọng Con"));
+  const t = document.createElement("div"); t.className = "two";
+  t.appendChild(player(d.track_m, "Con đóng vai Con", "Có lời Mẹ, phần của Con để trống"));
+  t.appendChild(player(d.track_b, "Con đóng vai Mẹ", "Có lời Con, phần của Mẹ để trống"));
+  st.appendChild(t);
+  const fin = document.createElement("div"); fin.className = "row"; fin.innerHTML = `<button class="hear" id="dn">✓ Con đã luyện xong</button>`; st.appendChild(fin);
+  $("dn").onclick = () => { reading = false; au.pause(); star(); finish("dialogue"); };
+}
+function gHome(){
+  active = null; const st = frame("home"), d = D[L]; st.style.textAlign = "left";
+  st.innerHTML = `<div class="steps4">${[1,2,3,4].map(i=>`<img src="img/step${i}.jpg" alt="Bước ${i}">`).join("")}</div>`;
+  st.appendChild(player(d.home.track, "Mỗi sáng dọn giường", "Chào buổi sáng → 4 bước → chant"));
+  const tip = document.createElement("div"); tip.className = "tip";
+  tip.innerHTML = L===1 ? "Trong clip gửi cô, con nói: <b>Good morning, Mummy!</b> và <b>I can make my bed!</b>" : "Trong clip gửi cô, con kể đủ 4 bước bằng <b>First, Then, Next, Finally</b>.";
+  st.appendChild(tip);
+  const fin = document.createElement("div"); fin.className = "row"; fin.innerHTML = `<button class="hear" id="dn">✓ Con đã dọn giường xong</button>`; st.appendChild(fin);
+  $("dn").onclick = () => { au.pause(); star(); finish("home"); };
+}
+home();
+</script>

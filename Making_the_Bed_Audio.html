@@ -1,0 +1,207 @@
+<title>Making the Bed Audio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap">
+<style>
+/* Layout: one column of activity panels under a sticky level + activity bar; each panel = one big track player, then tap-to-hear lines */
+:root{
+  --bg:#FFF8E1; --card:#FFFFFF; --ink:#22302A; --muted:#5E6B63; --line:#FFD98A;
+  --green:#2E9D45; --green-soft:#D9F5DC; --berry:#E0336B; --l1:#FFE27A; --l2:#BDE4FF; --l1ink:#5B4500; --l2ink:#123E66;
+  color-scheme:light;
+  --font:"Andika","Trebuchet MS",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg) linear-gradient(180deg,#FFF1B8 0,#FFF8E1 260px) no-repeat;color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto}
+header.top{padding-block:22px 10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header.top img{width:84px;height:84px;object-fit:cover;border-radius:16px;border:3px solid var(--green)}
+header.top h1{margin:0;font-size:clamp(26px,5vw,38px);color:var(--green);text-wrap:balance;line-height:1.1}
+header.top p{margin:4px 0 0;color:var(--muted)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line)}
+.lv{display:inline-flex;border:2px solid var(--green);border-radius:999px;overflow:hidden;margin-bottom:10px}
+.lv button{font:700 16px var(--font);border:0;background:transparent;color:var(--ink);padding:8px 18px;cursor:pointer}
+.lv button[aria-pressed="true"].b1{background:var(--l1);color:var(--l1ink)}
+.lv button[aria-pressed="true"].b2{background:var(--l2);color:var(--l2ink)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.tabs button{flex:none;font:700 15px var(--font);border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;cursor:pointer}
+.tabs button[aria-selected="true"]{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+button:focus-visible{outline:3px solid var(--berry);outline-offset:2px}
+section.act{margin-top:18px}
+.act h2{margin:0 0 4px;font-size:26px}
+.act .how{color:var(--muted);margin:0 0 14px;max-width:65ch}
+.player{background:var(--card);border:2px solid var(--green);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.player .pp{flex:none;width:58px;height:58px;border-radius:50%;border:0;background:var(--green);color:var(--bg);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.player .meta{flex:1;min-width:0}
+.player .t{font-weight:700}
+.player .sub{color:var(--muted);font-size:14px}
+.prog{height:8px;background:var(--line);border-radius:4px;margin-top:8px;cursor:pointer;position:relative}
+.prog i{position:absolute;inset:0 auto 0 0;background:var(--green);border-radius:4px;width:0}
+.time{flex:none;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:6px}
+.vc{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px;text-align:center;cursor:pointer;font:inherit;color:inherit}
+.vc img{width:100%;height:110px;object-fit:contain;background:#fff;border-radius:10px}
+.vc b{display:block;color:var(--berry);font-size:20px;margin-top:6px}
+.vc.on,.ln.on{border-color:var(--berry);box-shadow:0 0 0 3px color-mix(in srgb,var(--berry) 25%,transparent)}
+.lines{display:flex;flex-direction:column;gap:8px}
+.ln{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit;text-align:left;width:100%}
+.ln .ic{flex:none;width:36px;height:36px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:15px}
+.ln .tx{flex:1;min-width:0;font-size:19px;font-weight:700;color:var(--berry)}
+.ln .who{flex:none;font-size:13px;font-weight:700;border-radius:8px;padding:2px 8px;background:var(--green-soft);color:var(--green)}
+.ln .who.B{background:var(--l2);color:var(--l2ink)}
+.ln .trick{flex:none;font-size:13px;color:var(--muted)}
+.steph{margin:14px 0 6px;display:flex;align-items:center;gap:12px}
+.steph img{width:96px;height:66px;object-fit:contain;background:#fff;border-radius:10px;border:1px solid var(--line)}
+.steph b{font-size:20px;color:var(--green)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.comic{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 14px}
+.comic img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#fff;max-width:100%}
+.note{font-size:14px;color:var(--muted);margin-top:14px}
+.tip{background:var(--green-soft);border-radius:14px;padding:12px 14px;margin-top:14px;font-size:15px}
+.storyctl{display:flex;align-items:center;gap:14px;background:var(--card);border:2px solid var(--green);border-radius:18px;padding:12px 16px;margin-bottom:16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 112px);z-index:4}
+.storyctl .pp.big{width:64px;height:64px;font-size:26px;flex:none;border-radius:50%;border:0;background:var(--green);color:#fff;cursor:pointer}
+.storyctl b{font-size:19px}.storyctl .sub{color:var(--muted);font-size:14px}
+.scene{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px;margin-bottom:18px;position:relative}
+.scene img{display:block;width:100%;max-height:620px;object-fit:contain;background:#fff;border-radius:14px}
+.snum{position:absolute;top:20px;left:20px;width:42px;height:42px;border-radius:50%;background:var(--green);color:#fff;font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:1}
+.stepb{position:absolute;top:20px;right:20px;background:var(--l1);color:var(--l1ink);font-weight:700;border-radius:10px;padding:4px 12px}
+.scene .lines{margin-top:12px}
+.scene .ln .tx{font-size:clamp(20px,3.6vw,28px)}
+@media (max-width:520px){.storyctl{position:static}header.top{flex-wrap:nowrap;gap:10px}header.top img{width:56px;height:56px}header.top p{font-size:14px}.snum{top:16px;left:16px;width:34px;height:34px;font-size:17px}.comic{grid-template-columns:1fr 1fr 1fr}.vc img{height:90px}.player .pp{width:50px;height:50px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <img src="img/done.jpg" alt="Bé trai đứng cạnh chiếc giường đã dọn gọn">
+    <div><h1>Making the Bed</h1><p>Nghe, đọc và luyện nói · D&amp;T Academy</p></div>
+  </header>
+  <div class="bar">
+    <div class="lv" role="group" aria-label="Trình độ">
+      <button class="b1" id="lv1" aria-pressed="true">Level 1 · Pre-A1</button>
+      <button class="b2" id="lv2" aria-pressed="false">Level 2 · Movers</button>
+    </div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+  </div>
+  <main id="main"></main>
+</div>
+
+<script>
+const D = {"1": {"chant": {"lines": [["Pillows off, pull it tight,", "L1_chant_1"], ["Blanket on, nice and right!", "L1_chant_2"], ["Pillows back, teddy too,", "L1_chant_3"], ["A tidy bed, well done, you!", "L1_chant_4"]], "track": "L1_Chant.mp3", "dur": 34.944}, "vocab": {"lines": [["bed", "L1_vocab_1", "bed"], ["pillow", "L1_vocab_2", "pillow"], ["sheet", "L1_vocab_3", "sheet"], ["blanket", "L1_vocab_4", "blanket"], ["teddy", "L1_vocab_5", "teddy"], ["pyjamas", "L1_vocab_6", "pyjamas"], ["lamp", "L1_vocab_7", "lamp"], ["clock", "L1_vocab_8", "clock"], ["wardrobe", "L1_vocab_9", "wardrobe"]], "track": "L1_Act1_Vocabulary.mp3", "dur": 76.944}, "simon": {"lines": [["Simon says, take the pillow off!", "L1_simon_1", 1], ["Simon says, pull the sheet!", "L1_simon_2", 1], ["Put the blanket on!", "L1_simon_3", 0], ["Simon says, put the blanket on!", "L1_simon_4", 1], ["Pull!", "L1_simon_5", 0], ["Simon says, take the teddy off!", "L1_simon_6", 1], ["Simon says, put the pillow back!", "L1_simon_7", 1], ["Put the teddy back!", "L1_simon_8", 0], ["Simon says, put the teddy back!", "L1_simon_9", 1]], "track": "L1_Act2_Simon_says.mp3", "dur": 68.448}, "steps": {"lines": [["Take the pillows off.", "L1_step1_1", 1], ["Take the teddy off.", "L1_step1_2", 1], ["Put them down.", "L1_step1_3", 1], ["Pull the sheet.", "L1_step2_1", 2], ["Make it smooth.", "L1_step2_2", 2], ["Put the blanket on.", "L1_step3_1", 3], ["Pull, pull, pull!", "L1_step3_2", 3], ["Nice and tight!", "L1_step3_3", 3], ["Put the pillows back.", "L1_step4_1", 4], ["Put the teddy back.", "L1_step4_2", 4], ["All done!", "L1_step4_3", 4]], "track": "L1_Act3_Sentences.mp3", "dur": 77.136}, "dialogue": {"lines": [["Wake up! It's morning!", "L1_dlg_1", "M"], ["Good morning, Mummy!", "L1_dlg_2", "B"], ["Good morning, sleepyhead!", "L1_dlg_3", "M"], ["Get up, please. Let's make the bed!", "L1_dlg_4", "M"], ["OK, Mummy!", "L1_dlg_5", "B"], ["Well done! A tidy bed!", "L1_dlg_6", "M"], ["I can make my bed!", "L1_dlg_7", "B"]], "track": "L1_Act4_Dialogue_full.mp3", "track_m": "L1_Act4_You_are_the_child.mp3", "track_b": "L1_Act4_You_are_Mummy.mp3", "dur": 25.992}, "seq": {"lines": [["Take the pillows off.", "L1_seq_1"], ["Pull the sheet.", "L1_seq_2"], ["Put the blanket on.", "L1_seq_3"], ["Put the pillows back.", "L1_seq_4"]], "track": "L1_Act5_Order.mp3", "dur": 28.56, "track_game": "L1_Act5_Yes_or_No.mp3"}, "home": {"track": "L1_Act6_Home_practice.mp3", "dur": 63.24}, "phrases": [["wake up", "L1_ph_wake_up", "comic1", "thức dậy"], ["good morning", "L1_ph_good_morning", "comic2", "chào buổi sáng"], ["sleepyhead", "L1_ph_sleepyhead", "comic1", "đồ ngủ nướng"], ["get up", "L1_ph_get_up", "comic3", "ra khỏi giường"], ["make the bed", "L1_ph_make_the_bed", "step1", "dọn giường"], ["take off", "L1_ph_take_off", "step1", "bỏ ra, lấy ra"], ["pull", "L1_ph_pull", "step2", "kéo"], ["put on", "L1_ph_put_on", "step3", "đặt lên, trải lên"], ["put back", "L1_ph_put_back", "step4", "đặt lại"], ["tidy", "L1_ph_tidy", "done", "gọn gàng"], ["well done", "L1_ph_well_done", "done", "giỏi lắm"]]}, "2": {"chant": {"lines": [["Pillows off, pull it tight,", "L2_chant_1"], ["Blanket on, nice and right!", "L2_chant_2"], ["Pillows back, teddy too,", "L2_chant_3"], ["A tidy bed, well done, you!", "L2_chant_4"]], "track": "L2_Chant.mp3", "dur": 31.776}, "vocab": {"lines": [["bed", "L2_vocab_1", "bed"], ["pillow", "L2_vocab_2", "pillow"], ["sheet", "L2_vocab_3", "sheet"], ["blanket", "L2_vocab_4", "blanket"], ["teddy", "L2_vocab_5", "teddy"], ["pyjamas", "L2_vocab_6", "pyjamas"], ["lamp", "L2_vocab_7", "lamp"], ["clock", "L2_vocab_8", "clock"], ["wardrobe", "L2_vocab_9", "wardrobe"], ["mattress", "L2_vocab_10", "bed"], ["the head of the bed", "L2_vocab_11", "bed"], ["the foot of the bed", "L2_vocab_12", "bed"], ["duvet", "L2_vocab_13", "duvet"], ["duvet cover", "L2_vocab_14", "duvet_cover"], ["pillowcase", "L2_vocab_15", "pillowcase"], ["cushion", "L2_vocab_16", "cushion"], ["soft toy", "L2_vocab_17", "teddy"], ["nightdress", "L2_vocab_18", "nightdress"], ["bedside table", "L2_vocab_19", "bedside_table"], ["table lamp", "L2_vocab_20", "lamp"], ["alarm clock", "L2_vocab_21", "clock"], ["stool", "L2_vocab_22", "stool"], ["dressing table", "L2_vocab_23", "dressing_table"], ["mirror", "L2_vocab_24", "mirror"]], "track": "L2_Act1_Vocabulary.mp3", "dur": 204.528}, "simon": {"lines": [["Simon says, take the pillows off!", "L2_simon_1", 1], ["Simon says, tuck the sheet in!", "L2_simon_2", 1], ["Make it smooth!", "L2_simon_3", 0], ["Simon says, make it smooth!", "L2_simon_4", 1], ["Simon says, put the blanket on!", "L2_simon_5", 1], ["Pull it tight!", "L2_simon_6", 0], ["Simon says, pull it tight!", "L2_simon_7", 1], ["Simon says, tuck it in!", "L2_simon_8", 1], ["Put the pillows back!", "L2_simon_9", 0], ["Simon says, put your soft toys back!", "L2_simon_10", 1]], "track": "L2_Act2_Simon_says.mp3", "dur": 71.904}, "steps": {"lines": [["First, take the pillows off the bed.", "L2_step1_1", 1], ["Take your soft toys off, too.", "L2_step1_2", 1], ["Put them on the floor.", "L2_step1_3", 1], ["Then, tuck the sheet under the mattress.", "L2_step2_1", 2], ["Make it smooth and neat.", "L2_step2_2", 2], ["Next, put the blanket on.", "L2_step3_1", 3], ["Tuck it in the same way.", "L2_step3_2", 3], ["Pull it very tight.", "L2_step3_3", 3], ["Finally, put the pillows back.", "L2_step4_1", 4], ["Put your soft toys back, too.", "L2_step4_2", 4], ["Put them at the head of the bed.", "L2_step4_3", 4]], "track": "L2_Act3_Sentences.mp3", "dur": 82.344}, "dialogue": {"lines": [["Rise and shine! Wakey wakey! It's time to wake up!", "L2_dlg_1", "M"], ["Good morning, Mummy.", "L2_dlg_2", "B"], ["Good morning, sleepyhead. Now get up and help me make the bed.", "L2_dlg_3", "M"], ["OK, Mummy.", "L2_dlg_4", "B"], ["Come on. Let me show you how to make the bed.", "L2_dlg_5", "M"], ["There you have it! A well-made bed!", "L2_dlg_6", "M"], ["I can make my bed!", "L2_dlg_7", "B"]], "track": "L2_Act4_Dialogue_full.mp3", "track_m": "L2_Act4_You_are_the_child.mp3", "track_b": "L2_Act4_You_are_Mummy.mp3", "dur": 29.784}, "seq": {"lines": [["First, take the pillows and your soft toys off the bed.", "L2_seq_1"], ["Then, tuck the sheet under the mattress.", "L2_seq_2"], ["Next, put the blanket on and pull it tight.", "L2_seq_3"], ["Finally, put the pillows and soft toys back.", "L2_seq_4"]], "track": "L2_Act5_Order.mp3", "dur": 35.376, "track_game": "L2_Act5_Yes_or_No.mp3"}, "home": {"track": "L2_Act6_Home_practice.mp3", "dur": 68.904}, "phrases": [["rise and shine", "L2_ph_rise_and_shine", "comic1", "dậy thôi nào"], ["wake up", "L2_ph_wake_up", "comic1", "thức dậy"], ["good morning", "L2_ph_good_morning", "comic2", "chào buổi sáng"], ["sleepyhead", "L2_ph_sleepyhead", "comic1", "đồ ngủ nướng"], ["get up", "L2_ph_get_up", "comic3", "ra khỏi giường"], ["help", "L2_ph_help", "comic3", "giúp đỡ"], ["make the bed", "L2_ph_make_the_bed", "step1", "dọn giường"], ["take off", "L2_ph_take_off", "step1", "bỏ ra, lấy ra"], ["tuck in", "L2_ph_tuck_in", "step2", "nhét vào"], ["smooth", "L2_ph_smooth", "step2", "phẳng"], ["neat", "L2_ph_neat", "step2", "ngay ngắn"], ["put on", "L2_ph_put_on", "step3", "đặt lên, trải lên"], ["pull", "L2_ph_pull", "step3", "kéo"], ["tight", "L2_ph_tight", "step3", "căng"], ["put back", "L2_ph_put_back", "step4", "đặt lại"], ["first", "L2_ph_first", "step1", "đầu tiên"], ["then", "L2_ph_then", "step2", "sau đó"], ["next", "L2_ph_next", "step3", "tiếp theo"], ["finally", "L2_ph_finally", "step4", "cuối cùng"], ["tidy", "L2_ph_tidy", "done", "gọn gàng"], ["well-made", "L2_ph_well_made", "done", "được dọn gọn"]]}};
+const ACTS = [
+  {id:"vocab", n:"1 · Từ vựng", h:"Phần 1 · Từ vựng", how:"Mỗi từ được đọc 2 lần, sau mỗi lần có khoảng nghỉ để nhắc lại. Chạm vào một hình để nghe riêng từ đó."},
+  {id:"story", n:"2 · Đọc hội thoại", h:"Phần 2 · Đọc hội thoại", how:"Xem tranh và đọc theo cả câu chuyện, từ lúc Mẹ gọi con dậy đến khi dọn giường xong. Bấm “Đọc cả truyện” để nghe liền mạch, hoặc chạm vào từng câu để nghe riêng."},
+  {id:"dialogue", n:"3 · Phân vai", h:"Phần 3 · Phân vai", how:"Đọc xong truyện rồi mới phân vai. Nghe cả đoạn trước, sau đó chọn một bản khuyết để tự nói vai còn lại vào khoảng trống."},
+  {id:"seq", n:"4 · Thứ tự", h:"Phần 4 · Xếp thứ tự", how:"Nghe 4 bước theo đúng thứ tự để xếp tranh. Trò Yes or No: nghe rồi hô “Yes!” hoặc “No!” trước khi đáp án vang lên."},
+  {id:"home", n:"5 · Ở nhà", h:"Phần 5 · Luyện ở nhà", how:"Mở mỗi sáng khi con dọn giường. Con làm theo từng bước, nói “I can make my bed!” rồi dán sticker."}
+];
+let L = 1, cur = "vocab";
+try { const s = localStorage.getItem("mtb_lv"); if (s === "1" || s === "2") L = +s; } catch(e) {}
+if (location.hash && ACTS.some(a => "#" + a.id === location.hash)) cur = location.hash.slice(1);
+
+const audio = new Audio(); let active = null;
+function fmt(s){ if(!isFinite(s)) return "0:00"; s=Math.round(s); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function stopAll(){ audio.pause(); document.querySelectorAll(".on").forEach(e=>e.classList.remove("on")); document.querySelectorAll(".pp").forEach(b=>{b.textContent="▶";b.setAttribute("aria-label","Phát")}); }
+function playClip(name, el){
+  stopAll(); active = null; audio.src = "audio/" + name + ".mp3"; audio.play().catch(()=>{}); if(el) el.classList.add("on");
+  audio.onended = () => el && el.classList.remove("on");
+}
+function player(file, title, sub){
+  const w = document.createElement("div"); w.className = "player";
+  w.innerHTML = `<button class="pp" aria-label="Phát">▶</button><div class="meta"><div class="t">${title}</div>${sub?`<div class="sub">${sub}</div>`:""}<div class="prog"><i></i></div></div><div class="time">0:00</div>`;
+  const pp = w.querySelector(".pp"), bar = w.querySelector(".prog"), fill = bar.querySelector("i"), tm = w.querySelector(".time");
+  const probe = new Audio("audio/" + file); probe.preload = "metadata"; probe.onloadedmetadata = () => { if(active!==w) tm.textContent = fmt(probe.duration); };
+  pp.onclick = () => {
+    if (active === w && !audio.paused) { audio.pause(); pp.textContent = "▶"; return; }
+    if (active !== w) { stopAll(); active = w; audio.src = "audio/" + file; }
+    audio.play().catch(()=>{}); pp.textContent = "❚❚"; pp.setAttribute("aria-label","Tạm dừng");
+    audio.ontimeupdate = () => { if(active===w){ fill.style.width = (audio.currentTime/audio.duration*100||0)+"%"; tm.textContent = fmt(audio.currentTime)+" / "+fmt(audio.duration);} };
+    audio.onended = () => { if(active===w){ pp.textContent="▶"; fill.style.width="0"; } };
+  };
+  bar.onclick = e => { if(active===w && audio.duration){ const r=bar.getBoundingClientRect(); audio.currentTime=(e.clientX-r.left)/r.width*audio.duration; } };
+  return w;
+}
+function line(text, clip, extra){
+  const b = document.createElement("button"); b.className = "ln";
+  b.innerHTML = `<span class="ic" aria-hidden="true">🔊</span><span class="tx">${text}</span>${extra||""}`;
+  b.onclick = () => playClip(clip, b); return b;
+}
+function render(){
+  stopAll(); active = null;
+  const d = D[L], a = ACTS.find(x=>x.id===cur), m = document.getElementById("main"); m.innerHTML = "";
+  const s = document.createElement("section"); s.className = "act";
+  s.innerHTML = `<h2>${a.h}</h2><p class="how">${a.how}</p>`; m.appendChild(s);
+  if (cur === "vocab") {
+    s.appendChild(player(d.vocab.track, "Listen and repeat", `${d.vocab.lines.length} từ`));
+    const g = document.createElement("div"); g.className="grid";
+    d.vocab.lines.forEach(([t,c,img])=>{ const b=document.createElement("button"); b.className="vc"; b.innerHTML=`<img src="img/${img}.jpg" alt="${t}"><b>${t}</b>`; b.onclick=()=>playClip(c,b); g.appendChild(b); });
+    s.appendChild(g);
+  }
+  if (cur === "story") {
+    const dl = d.dialogue.lines, st = d.steps.lines;
+    const scenes = [
+      {img:"comic1", lines:[dl[0]]}, {img:"comic2", lines:[dl[1], dl[2]]}, {img:"comic3", lines:[dl[3], dl[4]]},
+      ...[1,2,3,4].map(n => ({img:"step"+n, step:n, lines: st.filter(x=>x[2]===n).map(x=>[x[0], x[1], "M"])})),
+      {img:"done", lines:[dl[5], dl[6]]}
+    ];
+    const ctl = document.createElement("div"); ctl.className = "storyctl";
+    ctl.innerHTML = `<button class="pp big" id="all" aria-label="Đọc cả truyện">▶</button><div><b>Đọc cả truyện</b><div class="sub">${scenes.length} tranh · Mẹ và Con</div></div>`;
+    s.appendChild(ctl);
+    const btns = [];
+    scenes.forEach((sc, i) => {
+      const card = document.createElement("div"); card.className = "scene";
+      card.innerHTML = `<div class="snum">${i+1}</div><img src="img/${sc.img}_lg.jpg" alt="Tranh ${i+1}">${sc.step?`<div class="stepb">Step ${sc.step}</div>`:""}`;
+      const ls = document.createElement("div"); ls.className = "lines";
+      sc.lines.forEach(([tx, cl, who]) => { const b = line(tx, cl, `<span class="who ${who}">${who==="M"?"Mummy":"Child"}</span>`); b.dataset.clip = cl; btns.push(b); ls.appendChild(b); });
+      card.appendChild(ls); s.appendChild(card);
+    });
+    let playing = false;
+    const allBtn = document.getElementById("all");
+    allBtn.onclick = async () => {
+      if (playing) { playing = false; stopAll(); allBtn.textContent = "▶"; return; }
+      stopAll(); playing = true; allBtn.textContent = "❚❚";
+      for (const b of btns) {
+        if (!playing) break;
+        document.querySelectorAll(".ln.on").forEach(e=>e.classList.remove("on")); b.classList.add("on");
+        b.scrollIntoView({behavior:"smooth", block:"center"});
+        await new Promise(res => { audio.src = "audio/" + b.dataset.clip + ".mp3"; audio.onended = () => setTimeout(res, 900); audio.onerror = res; audio.play().catch(res); });
+      }
+      if (playing) { playing = false; allBtn.textContent = "▶"; document.querySelectorAll(".ln.on").forEach(e=>e.classList.remove("on")); }
+    };
+  }
+  if (cur === "dialogue") {
+    s.appendChild(player(d.dialogue.track, "Cả đoạn hội thoại", "Giọng Mẹ và giọng Con"));
+    const t=document.createElement("div"); t.className="two";
+    t.appendChild(player(d.dialogue.track_m, "Con đóng vai Con", "Có lời Mẹ, phần của Con để trống"));
+    t.appendChild(player(d.dialogue.track_b, "Con đóng vai Mẹ", "Có lời Con, phần của Mẹ để trống"));
+    s.appendChild(t);
+    const ls=document.createElement("div"); ls.className="lines"; ls.style.marginTop="12px";
+    d.dialogue.lines.forEach(([tx,cl,who])=>ls.appendChild(line(tx,cl,`<span class="who ${who}">${who==="M"?"Mummy":"Child"}</span>`))); s.appendChild(ls);
+  }
+  if (cur === "seq") {
+    const t=document.createElement("div"); t.className="two";
+    t.appendChild(player(d.seq.track, "Đúng thứ tự", "Number 1 → Number 4"));
+    t.appendChild(player(d.seq.track_game, "Yes or No?", "Hô Yes hoặc No trước khi nghe đáp án"));
+    s.appendChild(t);
+    const ls=document.createElement("div"); ls.className="lines"; ls.style.marginTop="12px";
+    d.seq.lines.forEach(([tx,cl],i)=>ls.appendChild(line(tx,cl,`<span class="who">${i+1}</span>`))); s.appendChild(ls);
+  }
+  if (cur === "home") {
+    s.appendChild(player(d.home.track, "Mỗi sáng dọn giường", "Chào buổi sáng → 4 bước → chant"));
+    const tip=document.createElement("div"); tip.className="tip";
+    tip.innerHTML = L===1 ? "Trong clip gửi cô, con nói: <b>Good morning, Mummy!</b> và <b>I can make my bed!</b>" : "Trong clip gửi cô, con kể đủ 4 bước bằng <b>First, Then, Next, Finally</b>.";
+    s.appendChild(tip);
+  }
+  const n=document.createElement("p"); n.className="note"; n.textContent="Giọng đọc Anh-Anh. Level 1 đọc chậm hơn Level 2."; s.appendChild(n);
+}
+function tabs(){
+  const t=document.getElementById("tabs"); t.innerHTML="";
+  ACTS.forEach(a=>{ const b=document.createElement("button"); b.role="tab"; b.textContent=a.n; b.setAttribute("aria-selected", a.id===cur);
+    b.onclick=()=>{ cur=a.id; history.replaceState(null,"","#"+a.id); tabs(); render(); }; t.appendChild(b); });
+}
+function setL(v){ L=v; try{localStorage.setItem("mtb_lv",String(v))}catch(e){}
+  document.getElementById("lv1").setAttribute("aria-pressed", v===1); document.getElementById("lv2").setAttribute("aria-pressed", v===2); render(); }
+document.getElementById("lv1").onclick=()=>setL(1); document.getElementById("lv2").onclick=()=>setL(2);
+window.addEventListener("hashchange",()=>{ const h=location.hash.slice(1); if(ACTS.some(a=>a.id===h)){cur=h;tabs();render();} });
+setL(L); tabs();
+</script>
